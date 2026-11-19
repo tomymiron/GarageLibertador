@@ -1,0 +1,31 @@
+{
+  "name": "garage-libertador",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Facturador electrónico ARCA del Garage Libertador: Excel → Facturas A/B y Notas de Crédito con CAE, PDF y QR, con panel web local.",
+  "scripts": {
+    "facturar": "node src/facturar.js",
+    "probar": "node src/probar.js",
+    "generar-clave": "sh generar-clave.sh",
+    "panel": "node src/server.js --abrir",
+    "demo": "ARCA_ENV=demo node src/server.js --abrir",
+    "demo:datos": "node src/demo-datos.js",
+    "demo:vaciar": "node src/demo-datos.js --borrar"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "axios": "^1.21.1",
+    "dotenv": "^18.0.10",
+    "exceljs": "^4.4.0",
+    "node-forge": "^1.4.3",
+    "pdfkit": "^0.20.2",
+    "qrcode": "^1.5.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tomymiron/GarageLibertador.git"
+  }
+}

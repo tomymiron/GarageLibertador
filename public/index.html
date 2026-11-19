@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garage Libertador · Facturación</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/Inter_24pt-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Estilo del panel de organizador de Previate (apps/web/src/components/org/panel/panel.scss y pages/Org/styles/soldTickets.scss):
+   negro pleno, tarjetas "tinta" #0D0D0F con hairline gris al 25% y radio 24, controles #17171A en píldoras de 48px, Inter. */
+@font-face { font-family: "Inter"; src: url("/fonts/Inter_24pt-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter_24pt-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter_24pt-SemiBold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter_24pt-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter_24pt-ExtraBold.woff2") format("woff2"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter_24pt-Black.woff2") format("woff2"); font-weight: 900; font-display: swap; }
+:root {
+  --black: #000000; --card: #0D0D0F; --control: #17171A; --control-hover: #202024;
+  --hair: rgba(108, 99, 121, 0.25); --hair-soft: rgba(108, 99, 121, 0.15);
+  --white: #FFFFFF; --white-2: #B8BAC2; --gray: #6C6379;
+  --purple: #976CF6; --purple-25: rgba(151, 108, 246, 0.25); --green: #64E144; --red: #F54A4A; --red-soft: #FF6B6B; --red-bg: #3A1215; --yellow: #F6C74E; --blue: #749AED; --orange: #F7A21B;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--black); color: var(--white); font: 14px/1.45 "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.page { max-width: 1260px; margin: 0 auto; padding: 32px 24px 96px 28px; display: flex; flex-direction: column; gap: 18px; }
+.num { font-variant-numeric: tabular-nums; }
+.dim { color: var(--white-2); }
+.mono { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+td.mono, td .mono { white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* Barra lateral (OrgSidebar): #050506, ítems de 38px, el activo en #17171A */
+.app { display: grid; grid-template-columns: 262px minmax(0, 1fr); min-height: 100vh; }
+.rail { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 12px; padding: 24px 12px 20px; background: #050506; border-right: 1px solid var(--hair-soft); overflow-y: auto; }
+.rail-brand { display: flex; align-items: center; gap: 10px; padding: 0 4px 10px; }
+.rail-logo { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: #1F5FBF; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.9); font: 900 24px/1 "Inter", sans-serif; }
+.rail-brand b { font-size: 12px; line-height: 13px; font-weight: 900; letter-spacing: 0.01em; }
+.rail-stripe { height: 6px; border-radius: 3px; margin: 0 4px 4px; background: repeating-linear-gradient(-45deg, var(--orange) 0 8px, var(--black) 8px 16px); opacity: 0.9; }
+.rail-title { margin: 8px 0 6px; padding: 0 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--gray); }
+.rail-nav { display: flex; flex-direction: column; gap: 2px; }
+.rail-item { all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px; height: 38px; padding: 0 10px; border-radius: 12px; font-size: 12px; font-weight: 500; color: var(--white-2); }
+.rail-item svg { flex: none; }
+.rail-item span { flex: 1; white-space: nowrap; }
+.rail-item .badge-n { flex: none; min-width: 22px; height: 20px; padding: 0 8px; border-radius: 12px; display: grid; place-items: center; background: var(--purple); color: var(--white); font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.rail-item .badge-n[hidden] { display: none; }
+.rail-item .badge-n.is-warn { background: var(--yellow); color: var(--black); }
+.rail-item.is-active { background: var(--control); color: var(--white); font-weight: 600; box-shadow: inset 0 0 0 1px var(--hair-soft); }
+@media (hover: hover) and (pointer: fine) { .rail-item:not(.is-active):hover { background: var(--card); color: var(--white); } }
+.rail-item:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.rail-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.rail-env { display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 11px; color: var(--white-2); }
+.view { display: flex; flex-direction: column; gap: 18px; }
+.view[hidden] { display: none; }
+
+/* Encabezado de sección (sv-head): título arriba, subtítulo abajo */
+.sv-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.sv-head > div:first-child { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sv-head h1 { margin: 0; font-size: 42px; line-height: 42px; font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.sv-head p { margin: 0; font-size: 14px; color: var(--white-2); }
+.sv-head .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.back { all: unset; cursor: pointer; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px 0 10px; border-radius: 16px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); font-size: 13px; color: var(--white-2); }
+@media (hover: hover) and (pointer: fine) { .back:hover { color: var(--white); } }
+.back:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* Lista de archivos (sv-rows) */
+.files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.files li + li { border-top: 1px solid var(--hair-soft); }
+.file-row { all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: grid; grid-template-columns: 44px minmax(0, 1.6fr) 110px minmax(0, 1fr) auto; align-items: center; gap: 16px; min-height: 72px; padding: 10px 8px; border-radius: 16px; }
+@media (hover: hover) and (pointer: fine) { .file-row:hover { background: #121215; } }
+.file-row:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.file-row .xls { width: 44px; height: 44px; border-radius: 14px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); display: grid; place-items: center; font-size: 9px; font-weight: 800; color: var(--green); letter-spacing: 0.04em; }
+.file-row .who, .file-row .money { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.file-row .who b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-row small { font-size: 12px; color: var(--white-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-row .money { align-items: flex-end; } .file-row .money strong { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.file-row .go { width: 36px; height: 36px; border-radius: 18px; display: grid; place-items: center; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); }
+.pill.nc { background: rgba(245, 74, 74, 0.14); color: var(--red-soft); box-shadow: inset 0 0 0 1px rgba(245, 74, 74, 0.3); }
+.pill.anulada { background: var(--control); color: var(--red-soft); box-shadow: inset 0 0 0 1px rgba(245, 74, 74, 0.3); }
+.neg { color: var(--red-soft); }
+.modal .fld { margin-top: 16px; } .modal .fld input { width: 100%; }
+.modal .seg { width: 100%; } .modal .seg button { flex: 1; padding: 0 12px; }
+.modal .calc { margin: 0; font-size: 13px; color: var(--white-2); }
+.modal .ok-box { margin-top: 16px; padding: 16px; border-radius: 16px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); display: flex; flex-direction: column; gap: 4px; }
+.modal .ok-box b { font-size: 16px; } .modal .ok-box small { color: var(--white-2); }
+.pill.emitido { background: var(--green); color: var(--black); }
+.pill.parcial { background: var(--yellow); color: var(--black); }
+.pill.sinemitir { background: var(--control); color: var(--white-2); box-shadow: inset 0 0 0 1px var(--hair-soft); }
+
+/* Detalle de un archivo */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.timeline li { position: relative; display: grid; grid-template-columns: 22px 1fr; gap: 2px 12px; padding-bottom: 18px; }
+.timeline li:not(:last-child)::before { content: ""; position: absolute; left: 10px; top: 24px; bottom: 2px; width: 2px; border-radius: 1px; background: var(--hair); }
+.timeline .dot { width: 22px; height: 22px; border-radius: 11px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+.timeline .dot.ok { background: var(--green); color: var(--black); box-shadow: none; }
+.timeline .dot.warn { background: var(--yellow); color: var(--black); box-shadow: none; }
+.timeline b { font-size: 14px; font-weight: 600; }
+.timeline small { grid-column: 2; font-size: 12px; color: var(--white-2); }
+.timeline a.link { grid-column: 2; justify-self: start; margin-top: 8px; }
+
+/* Portada del garage: la foto de la entrada, título arriba y subtítulo abajo, franja de obra al pie */
+.hero { position: relative; min-height: 220px; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; background: #0E0E10 url("/img/garage.jpg") center 30% / cover no-repeat; box-shadow: inset 0 0 0 1px var(--hair); }
+.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.12) 100%); }
+.hero-inner { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 28px 28px 24px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 18px; min-width: 0; }
+.logo { flex: none; width: 60px; height: 60px; border-radius: 12px; background: #1F5FBF; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.92), 0 8px 24px rgba(0, 0, 0, 0.45); display: grid; place-items: center; font: 900 36px/1 "Inter", sans-serif; color: var(--white); }
+.brand-text { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.hero h1 { margin: 0; font-size: 42px; line-height: 42px; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; }
+.hero p { margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.75); }
+.head-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hero .btn { background: rgba(23, 23, 26, 0.72); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+@media (hover: hover) and (pointer: fine) { .hero .btn:not(:disabled):hover { background: rgba(32, 32, 36, 0.85); } }
+/* La franja intercalada naranja y negro de las columnas de la entrada */
+.stripe { position: relative; height: 10px; background: repeating-linear-gradient(-45deg, var(--orange) 0 14px, var(--black) 14px 28px); }
+
+/* Chips de estado (sv-chip) */
+.chip-st { height: 22px; padding: 0 9px; border-radius: 11px; display: inline-grid; place-items: center; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.badge.produccion { background: var(--green); color: var(--black); }
+.badge.homologacion { background: var(--purple); color: var(--white); }
+.badge.demo { background: var(--yellow); color: var(--black); }
+
+/* Botones (sv-btn / pt-btn) */
+.btn { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 18px; border-radius: 24px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); color: var(--white); font-size: 14px; font-weight: 600; white-space: nowrap; transition: transform 160ms var(--ease-out), background-color 150ms ease; }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn[hidden] { display: none; }
+.btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.btn.primary { background: var(--white); color: var(--black); box-shadow: none; }
+.btn.danger { background: var(--red); color: var(--white); box-shadow: none; }
+.btn.ghost { background: transparent; box-shadow: none; color: var(--white-2); }
+.btn.sm { height: 36px; padding: 0 14px; border-radius: 18px; font-size: 13px; }
+.btn.lg { height: 52px; padding: 0 24px; border-radius: 26px; font-size: 15px; }
+.btn.fix { box-shadow: inset 0 0 0 1px rgba(245, 74, 74, 0.45); color: var(--red-soft); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:not(.primary):not(.danger):not(:disabled):hover { background: var(--control-hover); }
+  .btn.ghost:not(:disabled):hover { color: var(--white); }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } .btn:active:not(:disabled) { transform: none; } }
+
+/* Números (fg-kpi) */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.kpi { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-height: 124px; padding: 24px; border-radius: 24px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair); min-width: 0; }
+.kpi .l { font-size: 14px; line-height: 14px; color: var(--white-2); white-space: nowrap; }
+.kpi .v { font-size: 28px; line-height: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .n { font-size: 14px; line-height: 18px; color: var(--white-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .n .up { color: var(--green); } .kpi .n .down { color: var(--red); }
+.kpi.is-violet { background: var(--purple); box-shadow: inset 0 0 0 1px var(--hair); color: var(--black); }
+.kpi.is-violet .l { color: var(--black); } .kpi.is-violet .n, .kpi.is-violet .n .up, .kpi.is-violet .n .down { color: rgba(0, 0, 0, 0.7); }
+.kpi.is-warn { box-shadow: inset 0 0 0 1px rgba(246, 199, 78, 0.5); } .kpi.is-warn .n { color: var(--yellow); }
+
+/* Tarjetas (sv-card) */
+.card { min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: 24px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair); }
+.card[hidden] { display: none; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-head > div:first-child { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.card-head > div.file { flex-direction: row; gap: 12px; }
+.card-head b { font-size: 18px; font-weight: 600; display: inline-flex; align-items: center; gap: 10px; }
+.card-head b::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 5px; background: repeating-linear-gradient(-45deg, var(--orange) 0 4px, var(--black) 4px 8px); box-shadow: inset 0 0 0 1px var(--hair); }
+.card-head .file b::before, .card-head .file .name::before { display: none; }
+.card-head small { font-size: 12px; color: var(--white-2); }
+
+/* Probar conexión */
+.checks { display: flex; flex-direction: column; }
+.check { display: grid; grid-template-columns: 28px 1fr; gap: 2px 10px; padding: 12px 0; }
+.check + .check { border-top: 1px solid var(--hair-soft); }
+.check .ic { width: 22px; height: 22px; border-radius: 11px; display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+.check .ic.ok { background: var(--green); color: var(--black); } .check .ic.bad { background: var(--red-bg); color: var(--red-soft); }
+.check > span:nth-child(2) { font-weight: 600; }
+.check small { grid-column: 2; color: var(--white-2); font-size: 13px; word-break: break-word; }
+
+/* Subir Excel */
+.drop { border-radius: 20px; padding: 48px 20px; text-align: center; cursor: pointer; background: var(--black); box-shadow: inset 0 0 0 1px var(--hair); outline-offset: 2px; transition: background-color 150ms ease, box-shadow 150ms ease; }
+.drop.over { background: rgba(247, 162, 27, 0.07); box-shadow: inset 0 0 0 1.5px var(--orange); }
+@media (hover: hover) and (pointer: fine) { .drop:hover { background: #050506; box-shadow: inset 0 0 0 1px rgba(108, 99, 121, 0.45); } }
+.drop .icon { width: 48px; height: 48px; margin: 0 auto 14px; border-radius: 24px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); display: grid; place-items: center; color: var(--white); }
+.drop strong { display: block; font-size: 16px; font-weight: 700; }
+.drop p { margin: 6px 0 0; color: var(--white-2); font-size: 13px; }
+.drop .cols { margin-top: 16px; display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.drop .cols span { font-size: 12px; height: 26px; display: inline-grid; place-items: center; padding: 0 10px; border-radius: 13px; background: var(--control); color: var(--white-2); }
+
+/* Archivo cargado */
+.file { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.file .xls { flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); display: grid; place-items: center; font-size: 10px; font-weight: 800; color: var(--green); letter-spacing: 0.04em; }
+.file .name { display: block; font-size: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file small { display: block; font-size: 12px; color: var(--white-2); margin-top: 3px; }
+
+/* Mini números dentro de una tarjeta */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.stat { padding: 16px 18px; border-radius: 18px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); min-width: 0; }
+.stat label { display: block; font-size: 12px; color: var(--white-2); }
+.stat b { display: block; font-size: 22px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat b.red { color: var(--red-soft); } .stat b.green { color: var(--green); }
+
+.notice { padding: 12px 16px; border-radius: 16px; font-size: 13px; line-height: 1.4; }
+.notice.amber { background: rgba(246, 199, 78, 0.1); color: var(--yellow); box-shadow: inset 0 0 0 1px rgba(246, 199, 78, 0.25); }
+.notice.red { background: var(--red-bg); color: var(--red-soft); box-shadow: inset 0 0 0 1px rgba(245, 74, 74, 0.28); }
+.notice.green { background: rgba(100, 225, 68, 0.08); color: var(--green); box-shadow: inset 0 0 0 1px rgba(100, 225, 68, 0.25); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* Tablas: filas de 64px separadas por hairline, sin cajas */
+.table-wrap { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-weight: 500; font-size: 12px; color: var(--white-2); padding: 0 10px 10px; white-space: nowrap; }
+td { padding: 14px 10px; border-top: 1px solid var(--hair-soft); vertical-align: middle; }
+th:first-child, td:first-child { padding-left: 4px; } th:last-child, td:last-child { padding-right: 4px; }
+td b { font-weight: 800; }
+td.r b { white-space: nowrap; }
+.r { text-align: right; }
+.letter { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 15px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); font-weight: 800; font-size: 13px; }
+.sub { display: block; font-size: 12px; color: var(--white-2); margin-top: 2px; }
+.err { display: block; font-size: 12px; color: var(--red-soft); margin-top: 4px; }
+
+.pill { height: 22px; padding: 0 9px; border-radius: 11px; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.pill.aemitir { background: var(--purple); color: var(--white); }
+.pill.emitida { background: var(--green); color: var(--black); }
+.pill.error { background: var(--red-bg); color: var(--red-soft); box-shadow: inset 0 0 0 1px rgba(245, 74, 74, 0.28); }
+.pill.emitiendo { background: var(--yellow); color: var(--black); }
+.pill.yaemitida, .pill.revisar { background: var(--control); color: var(--white-2); box-shadow: inset 0 0 0 1px var(--hair-soft); }
+.pill.pendiente { background: rgba(246, 199, 78, 0.12); color: var(--yellow); box-shadow: inset 0 0 0 1px rgba(246, 199, 78, 0.35); }
+.spin { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid currentColor; border-right-color: transparent; animation: spin 600ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Edición en la vista previa */
+.row-acts { display: flex; gap: 4px; justify-content: flex-end; }
+tr.omitida td:not(:last-child) { opacity: 0.4; }
+tr.omitida td:nth-child(4) { text-decoration: line-through; }
+.tag { display: inline-grid; place-items: center; height: 18px; margin-left: 8px; padding: 0 7px; border-radius: 9px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: var(--purple-25); color: var(--purple); vertical-align: 2px; cursor: help; }
+tr.editing td { background: var(--black); }
+tr.editing td:first-child { border-radius: 18px 0 0 18px; } tr.editing td:last-child { border-radius: 0 18px 18px 0; }
+.edit { padding: 6px 0; }
+.edit-grid { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.fld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fld label { font-size: 12px; color: var(--white-2); }
+.fld input { height: 44px; border: 0; border-radius: 22px; padding: 0 16px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); color: var(--white); font: inherit; width: 100%; }
+.fld input::placeholder { color: var(--gray); }
+.fld input:focus { outline: none; box-shadow: inset 0 0 0 1px var(--white-2); }
+.fld input:focus-visible { outline: none; }
+.fld input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px rgba(245, 74, 74, 0.6); }
+.fld.doc { width: 180px; } .fld.grow { flex: 1; min-width: 220px; } .fld.sm { width: 100px; } .fld.md { width: 150px; }
+.fld.sm input, .fld.md input { text-align: right; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 22px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); height: 44px; }
+.seg button { all: unset; cursor: pointer; min-width: 44px; text-align: center; border-radius: 18px; font-weight: 700; color: var(--white-2); }
+.seg button[aria-checked="true"] { background: var(--white); color: var(--black); }
+.seg button:focus-visible { outline: 2px solid var(--green); }
+.edit-foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.edit-foot .calc { font-size: 13px; color: var(--white-2); }
+.edit-foot .calc b { color: var(--white); }
+.edit-foot .hint { margin-left: auto; font-size: 12px; color: var(--gray); }
+.edit-foot .err { margin: 0; flex-basis: 100%; }
+
+/* Barra de emisión */
+.actionbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 18px; border-top: 1px solid var(--hair-soft); flex-wrap: wrap; }
+.progress { flex: 1; min-width: 180px; max-width: 420px; }
+.progress .track { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.progress .bar { height: 100%; width: 100%; border-radius: 4px; background: repeating-linear-gradient(-45deg, var(--orange) 0 8px, #1A1206 8px 16px); transform-origin: left; transform: scaleX(0); transition: transform 300ms var(--ease-out); }
+.progress small { display: block; margin-top: 8px; color: var(--white-2); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .progress .bar { transition: none; } }
+
+/* Historial: barra de herramientas (PanelToolbar) */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.search-box { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 18px; border-radius: 24px; background: var(--black); box-shadow: inset 0 0 0 1px var(--hair); cursor: text; color: var(--white-2); }
+.search-box:focus-within { box-shadow: inset 0 0 0 1px var(--white-2); }
+.search { all: unset; flex: 1; min-width: 0; font-size: 14px; color: var(--white); }
+.search::placeholder { color: var(--white-2); }
+.search::-webkit-search-cancel-button { filter: invert(0.7); }
+.chips { display: inline-flex; gap: 4px; padding: 4px; border-radius: 24px; background: var(--black); box-shadow: inset 0 0 0 1px var(--hair); }
+.chip { all: unset; cursor: pointer; height: 40px; padding: 0 16px; border-radius: 20px; font-size: 14px; font-weight: 600; color: var(--white-2); white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--white); color: var(--black); }
+.chip:focus-visible { outline: 2px solid var(--green); }
+.hist-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#hist { display: flex; flex-direction: column; gap: 18px; }
+.hist-foot { padding-top: 14px; color: var(--white-2); font-size: 13px; border-top: 1px solid var(--hair-soft); }
+.empty { padding: 28px 0; color: var(--white-2); }
+a.link { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: 16px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); color: var(--white); text-decoration: none; font-size: 12px; font-weight: 700; }
+@media (hover: hover) and (pointer: fine) { a.link:hover { background: var(--control-hover); } }
+
+/* Menús propios (Dropdown del panel): nunca el <select> nativo */
+.menu { position: relative; }
+.menu-btn { all: unset; box-sizing: border-box; cursor: pointer; height: 48px; padding: 0 16px 0 20px; border-radius: 24px; background: var(--control); box-shadow: inset 0 0 0 1px var(--hair-soft); display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; max-width: 280px; transition: transform 160ms var(--ease-out), background-color 150ms ease; }
+.menu-btn:active { transform: scale(0.97); }
+.menu-btn .k { color: var(--white-2); }
+.menu-btn .v { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-btn svg { flex: none; transition: transform 200ms var(--ease-out); }
+.menu-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+.menu-btn.on { background: var(--white); color: var(--black); box-shadow: none; }
+.menu-btn.on .k { color: rgba(0, 0, 0, 0.55); }
+.menu-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .menu-btn:not(.on):hover { background: var(--control-hover); } }
+.menu-pop { position: absolute; top: calc(100% + 8px); left: 0; z-index: 70; min-width: 240px; max-width: 320px; padding: 6px; border-radius: 16px; background: var(--control); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 0 0 1px var(--hair); transform-origin: top left; animation: dd-in 150ms var(--ease-out); }
+.menu-pop[hidden] { display: none; }
+@keyframes dd-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .menu-pop { animation: none; } .menu-btn, .menu-btn svg { transition: none; } }
+.menu-search { all: unset; box-sizing: border-box; width: 100%; height: 40px; padding: 0 14px; margin-bottom: 6px; border-radius: 12px; background: var(--black); box-shadow: inset 0 0 0 1px var(--hair); font-size: 14px; color: var(--white); }
+.menu-search:focus { box-shadow: inset 0 0 0 1px var(--white-2); }
+.menu-list { max-height: 320px; overflow-y: auto; outline: none; }
+.menu-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 40px; padding: 0 14px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--white-2); }
+.menu-opt .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-opt .c { font-size: 12px; color: var(--gray); font-variant-numeric: tabular-nums; }
+.menu-opt .ck { display: none; }
+.menu-opt.act { background: rgba(255, 255, 255, 0.06); color: var(--white); }
+.menu-opt[aria-selected="true"] { background: var(--white); color: var(--black); font-weight: 600; }
+.menu-opt[aria-selected="true"] .c { color: #4A4A4A; }
+.menu-group { padding: 10px 14px 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray); }
+.menu-empty { padding: 10px 14px; color: var(--white-2); font-size: 13px; }
+
+/* Confirmación */
+.overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: grid; place-items: center; padding: 16px; z-index: 100; }
+.overlay[hidden] { display: none; }
+.modal { width: 100%; max-width: 460px; background: var(--card); border-radius: 24px; padding: 34px 28px 28px; position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px var(--hair), 0 30px 80px rgba(0, 0, 0, 0.6); }
+.modal::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: repeating-linear-gradient(-45deg, var(--orange) 0 12px, var(--black) 12px 24px); }
+.modal h3 { margin: 0 0 8px; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+.modal p { margin: 0 0 6px; color: var(--white-2); font-size: 14px; }
+.modal .total { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; margin: 18px 0 8px; color: var(--white); }
+.modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .split { grid-template-columns: 1fr; } .file-row { grid-template-columns: 44px minmax(0, 1fr) auto; } .file-row .money, .file-row .pill-cell { display: none; } }
+@media (max-width: 767px) {
+  .app { grid-template-columns: 1fr; }
+  .rail { position: sticky; top: 0; z-index: 60; height: auto; flex-direction: row; align-items: center; gap: 8px; padding: 10px 12px; border-right: 0; border-bottom: 1px solid var(--hair-soft); overflow-x: auto; scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail-brand { padding: 0; } .rail-brand b, .rail-stripe, .rail-title, .rail-env { display: none; } .rail-logo { width: 36px; height: 36px; font-size: 20px; border-radius: 10px; }
+  .rail-nav { flex-direction: row; } .rail-item { width: auto; } .rail-foot { margin: 0; padding: 0; border: 0; flex-direction: row; }
+  .sv-head h1 { font-size: 30px; line-height: 1.1; }
+  .page { padding: 20px 16px 120px; gap: 12px; }
+  .hero { min-height: 240px; } .hero-inner { padding: 20px 18px; } .hero h1 { font-size: 28px; line-height: 1.05; } .logo { width: 48px; height: 48px; font-size: 29px; border-radius: 10px; } .brand { gap: 14px; }
+  .kpis { gap: 8px; } .kpi { padding: 16px; min-height: 0; } .kpi .v { font-size: 22px; line-height: 1.1; } .kpi .l, .kpi .n { font-size: 12px; } .kpi .n { white-space: normal; }
+  .card { padding: 18px 16px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .search-box { flex-basis: 100%; }
+  .fld.doc, .fld.md, .fld.sm { width: calc(50% - 5px); } .edit-foot .hint { display: none; }
+  .menu-btn { max-width: 100%; } .menu-pop { min-width: 220px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" aria-label="Navegación">
+    <div class="rail-brand"><span class="rail-logo" aria-hidden="true">E</span><b>GARAGE<br>LIBERTADOR</b></div>
+    <div class="rail-stripe" aria-hidden="true"></div>
+    <nav class="rail-nav">
+      <p class="rail-title">Facturación</p>
+      <a class="rail-item" href="#facturar" data-view="facturar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>Facturar</span></a>
+      <a class="rail-item" href="#facturas" data-view="facturas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>Facturas</span><em class="badge-n" id="nFacturas" hidden></em></a>
+      <a class="rail-item" href="#archivos" data-view="archivos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Archivos</span><em class="badge-n is-warn" id="nArchivos" hidden title="Archivos sin emitir o con filas pendientes"></em></a>
+    </nav>
+    <div class="rail-foot">
+      <button class="rail-item" id="btnProbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 0 1-10 0zM12 16v5"/></svg><span>Probar conexión</span></button>
+      <div class="rail-env"><span id="badge" class="chip-st badge"></span><span id="envTxt"></span></div>
+    </div>
+  </aside>
+  <main>
+  <div class="page">
+  <section class="card" id="probarCard" hidden>
+    <header class="card-head"><div><b>Conexión con ARCA</b><small>Certificado, punto de venta y padrón. No emite nada.</small></div><button class="btn sm ghost" id="btnCerrarProbar">Cerrar</button></header>
+    <div class="checks" id="checks"></div>
+  </section>
+
+
+  <div class="view" id="view-facturar">
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand"><div class="logo" aria-hidden="true">E</div><div class="brand-text"><h1 id="nombre">Garage Libertador</h1><p id="emisor">Facturación electrónica</p></div></div>
+      <div class="head-tools"><a class="btn" href="#archivos">Ver archivos procesados</a></div>
+    </div>
+    <div class="stripe" aria-hidden="true"></div>
+  </header>
+  <div class="kpis" id="kpis"></div>
+  <section class="card" id="nueva">
+    <header class="card-head" id="loteHead"></header>
+    <div id="loteBody" style="display:flex;flex-direction:column;gap:16px"></div>
+  </section>
+
+  </div>
+
+  <div class="view" id="view-facturas" hidden>
+    <header class="sv-head"><div><h1>Facturas</h1><p>Cada comprobante emitido, con su CAE y su PDF.</p></div></header>
+  <section class="card">
+    <header class="card-head"><div><b>Comprobantes</b><small>Todas las facturas emitidas, la última primero</small></div><button class="btn sm" id="btnExportar">Exportar (.csv)</button></header>
+    <div class="toolbar">
+      <label class="search-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="search" id="q" type="search" placeholder="Buscar cliente, CUIT o CAE" autocomplete="off" aria-label="Buscar en el historial"></label>
+      <div class="chips" role="group" aria-label="Tipo de factura"><button class="chip" data-tipo="" aria-pressed="true">A y B</button><button class="chip" data-tipo="A" aria-pressed="false">Factura A</button><button class="chip" data-tipo="B" aria-pressed="false">Factura B</button><button class="chip" data-tipo="NC" aria-pressed="false">Notas de crédito</button></div>
+    </div>
+    <div class="hist-filters">
+      <div class="menu" id="fPeriodo"></div><div class="menu" id="fCliente"></div><div class="menu" id="fArchivo"></div>
+      <button class="btn ghost" id="btnLimpiar" hidden>Limpiar filtros</button>
+    </div>
+    <div id="hist"></div>
+  </section>
+  </div>
+
+  <div class="view" id="view-archivos" hidden>
+    <header class="sv-head"><div><h1>Archivos</h1><p>Cada Excel que subiste: cuándo, qué salió, la copia del original y el resultado.</p></div></header>
+    <section class="card">
+      <header class="card-head"><div><b>Excel procesados</b><small id="archSub">El último arriba</small></div></header>
+      <div class="toolbar">
+        <label class="search-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="search" id="qArch" type="search" placeholder="Buscar por nombre de archivo" autocomplete="off" aria-label="Buscar archivo"></label>
+        <div class="chips" role="group" aria-label="Estado del archivo" id="chipsArch"><button class="chip" data-est="" aria-pressed="true">Todos</button><button class="chip" data-est="emitido" aria-pressed="false">Emitidos</button><button class="chip" data-est="parcial" aria-pressed="false">Parciales</button><button class="chip" data-est="sin emitir" aria-pressed="false">Sin emitir</button></div>
+      </div>
+      <div id="archList"></div>
+    </section>
+  </div>
+
+  <div class="view" id="view-archivo" hidden></div>
+  </div>
+  </main>
+</div>
+
+<input type="file" id="file" accept=".xlsx" hidden>
+
+<div class="overlay" id="ncModal" hidden role="dialog" aria-modal="true" aria-labelledby="ncTitle"><div class="modal" id="ncBox"></div></div>
+
+<div class="overlay" id="confirm" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal">
+    <h3 id="confirmTitle"></h3>
+    <p id="confirmText"></p>
+    <div class="total num" id="confirmTotal"></div>
+    <p id="confirmNote"></p>
+    <div class="actions"><button class="btn" id="btnCancelar">Cancelar</button><button class="btn primary" id="btnConfirmar">Emitir</button></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s)
+const ars = (n) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(n || 0)
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c])
+const fmtFecha = (s) => (s && /^\d{8}$/.test(s) ? `${s.slice(6, 8)}/${s.slice(4, 6)}/${s.slice(0, 4)}` : "")
+const fmtDoc = (d) => (d && d.length === 11 ? `${d.slice(0, 2)}-${d.slice(2, 10)}-${d.slice(10)}` : d || "")
+const ESTADOS = { "a emitir": ["aemitir", "A emitir"], emitiendo: ["emitiendo", "Emitiendo"], emitida: ["emitida", "Emitida"], error: ["error", "Error"], "ya emitida": ["yaemitida", "Ya emitida"], revisar: ["revisar", "Revisar"], pendiente: ["pendiente", "Sin confirmar"], omitida: ["yaemitida", "No se emite"] }
+const AMBIENTES = { produccion: "Producción", homologacion: "Homologación", demo: "Demo" }
+
+let estado = null, lote = null, emitiendo = false, terminado = null, hist = [], filtroTipo = "", editando = null, guardando = false
+
+async function api(url, opts = {}) {
+  const r = await fetch(url, opts)
+  const data = await r.json().catch(() => ({}))
+  if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.errores = data.errores; throw e }
+  return data
+}
+
+// ─── Estado / header ─────────────────────────────────────────────────────────
+async function cargarEstado() {
+  estado = await api("/api/estado")
+  $("#nombre").textContent = estado.nombre
+  document.title = `${estado.nombre} · Facturación`
+  $("#emisor").textContent = `Facturación electrónica ARCA · CUIT ${fmtDoc(estado.cuit)} · Punto de venta ${estado.ptoVta}${estado.ambiente === "demo" ? " · ARCA simulado, los CAE son inventados" : ""}`
+  const b = $("#badge"); b.className = `chip-st badge ${estado.ambiente}`; b.textContent = AMBIENTES[estado.ambiente]
+  $("#envTxt").textContent = `CUIT ${fmtDoc(estado.cuit)} · PV ${estado.ptoVta}`
+}
+
+$("#btnProbar").onclick = async () => {
+  const btn = $("#btnProbar"), lbl = btn.querySelector("span"); btn.disabled = true; lbl.textContent = "Probando…"
+  $("#probarCard").hidden = false; $("#checks").innerHTML = '<div class="empty">Consultando a ARCA…</div>'
+  try {
+    const pasos = await api("/api/probar", { method: "POST" })
+    $("#checks").innerHTML = pasos.map((p) => `<div class="check"><span class="ic ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span>${esc(p.nombre)}</span><small>${esc(p.detalle)}</small></div>`).join("")
+  } catch (e) { $("#checks").innerHTML = `<div class="notice red">${esc(e.message)}</div>` }
+  btn.disabled = false; lbl.textContent = "Probar conexión"
+  $("#probarCard").scrollIntoView({ block: "nearest" })
+}
+$("#btnCerrarProbar").onclick = () => ($("#probarCard").hidden = true)
+
+// ─── Subir Excel ─────────────────────────────────────────────────────────────
+function renderDrop(cargando, error) {
+  $("#loteHead").innerHTML = `<div><b>Nueva facturación</b><small>Subí el Excel: antes de emitir revisás y corregís cada factura</small></div>`
+  $("#loteBody").innerHTML = `
+    ${error ? `<div class="notice red">${esc(error)}</div>` : ""}
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Subir Excel">
+      <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></div>
+      <strong>${cargando ? "Leyendo el Excel y consultando a ARCA…" : "Arrastrá el Excel acá o hacé clic para elegirlo"}</strong>
+      <p>${cargando ? "Esto tarda unos segundos." : "Una factura por fila. Antes de emitir vas a ver el resumen."}</p>
+      ${cargando ? "" : '<div class="cols"><span>Tipo A/B</span><span>CUIT</span><span>Producto/Servicio</span><span>Cantidad</span><span>Precio Unitario</span></div>'}
+    </div>`
+  const d = $("#drop")
+  if (cargando) return
+  d.onclick = () => $("#file").click()
+  d.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#file").click() } }
+  d.ondragover = (e) => { e.preventDefault(); d.classList.add("over") }
+  d.ondragleave = () => d.classList.remove("over")
+  d.ondrop = (e) => { e.preventDefault(); d.classList.remove("over"); if (e.dataTransfer.files[0]) subir(e.dataTransfer.files[0]) }
+}
+$("#file").onchange = (e) => { if (e.target.files[0]) subir(e.target.files[0]); e.target.value = "" }
+
+async function subir(file) {
+  if (!/\.xlsx$/i.test(file.name)) return renderDrop(false, "Tiene que ser un archivo Excel .xlsx")
+  renderDrop(true)
+  try {
+    editando = null
+    lote = await api("/api/lotes", { method: "POST", headers: { "X-Nombre": encodeURIComponent(file.name), "Content-Type": "application/octet-stream" }, body: file })
+    terminado = null
+    renderLote()
+  } catch (e) { renderDrop(false, e.message) }
+}
+
+// ─── Vista previa y emisión ──────────────────────────────────────────────────
+function resumen() {
+  const f = lote.filas, sum = (l) => l.reduce((s, x) => s + x.total, 0)
+  const aEmitir = f.filter((x) => x.estado === "a emitir"), emitidas = f.filter((x) => x.estado === "emitida")
+  return { aEmitir: aEmitir.length, totalAEmitir: sum(aEmitir), emitidas: emitidas.length, totalEmitido: sum(emitidas), errores: f.filter((x) => x.estado === "error").length, ya: f.filter((x) => x.estado === "ya emitida").length, omitidas: f.filter((x) => x.estado === "omitida").length }
+}
+
+const puedeEditar = (f) => !emitiendo && !terminado && ["a emitir", "error", "omitida"].includes(f.estado)
+const aTexto = (n) => (n == null || Number.isNaN(n) ? "" : String(n).replace(".", ","))
+const descOriginal = (o) => (o ? `Original del Excel: ${o.tipo || "?"} · ${o.cuit || "sin CUIT"} · ${o.producto || "?"} · ${aTexto(o.cantidad)} × ${aTexto(o.precio)}` : "")
+
+function filaHtml(f) {
+  if (editando === f.fila) return editHtml(f)
+  const [cls, label] = ESTADOS[f.estado] || ["yaemitida", f.estado]
+  const cliente = f.cliente ? `${esc(f.cliente)}<span class="sub mono">${esc(fmtDoc(f.doc))}</span>` : f.doc ? `<span class="mono">${esc(fmtDoc(f.doc))}</span>${f.aviso ? `<span class="sub">${esc(f.aviso)}</span>` : ""}` : '<span class="dim">Consumidor Final</span>'
+  const extra = f.comprobante ? `<span class="sub mono">${esc(f.comprobante)}${f.cae ? ` · CAE ${esc(f.cae)}` : ""}</span>` : ""
+  const errs = f.estado === "omitida" ? "" : (f.errores || []).map((e) => `<span class="err">${esc(e)}</span>`).join("")
+  let acts = ""
+  if (puedeEditar(f)) {
+    if (f.estado === "a emitir") acts = `<button class="btn sm" data-edit="${f.fila}">Editar</button><button class="btn sm ghost" data-omitir="${f.fila}">No emitir</button>`
+    else if (f.estado === "error") acts = `<button class="btn sm fix" data-edit="${f.fila}">Corregir</button>`
+    else acts = `<button class="btn sm" data-incluir="${f.fila}">Incluir</button>`
+  }
+  return `<tr id="fila-${f.fila}" class="${f.estado === "omitida" ? "omitida" : ""}">
+    <td class="dim num">${f.fila}</td>
+    <td>${f.tipo ? `<span class="letter">${esc(f.tipo)}</span>` : ""}</td>
+    <td>${cliente}</td>
+    <td>${esc(f.producto)}${f.editada ? `<span class="tag" title="${esc(descOriginal(f.original))}">Editada</span>` : ""}</td>
+    <td class="r num">${f.cantidad ?? ""}</td>
+    <td class="r num">${f.neto != null ? ars(f.neto) : ""}</td>
+    <td class="r num">${f.iva != null ? ars(f.iva) : ""}</td>
+    <td class="r num"><b>${f.total != null ? ars(f.total) : ""}</b></td>
+    <td><span class="pill ${cls}">${f.estado === "emitiendo" ? '<span class="spin"></span>' : ""}${label}</span>${extra}${errs}</td>
+    <td><div class="row-acts">${acts}</div></td>
+  </tr>`
+}
+
+function editHtml(f) {
+  const campoErr = (k) => (f.errores || []).some((e) => ({ tipo: /^tipo/, cuit: /CUIT|DNI|Inscripto|padrón|corresponde/i, producto: /Producto/, cantidad: /^cantidad/, precio: /^precio/ })[k].test(e))
+  const inv = (k) => (campoErr(k) ? ' aria-invalid="true"' : "")
+  return `<tr id="fila-${f.fila}" class="editing"><td class="dim num">${f.fila}</td><td colspan="9"><form class="edit" id="editForm" autocomplete="off">
+    <div class="edit-grid">
+      <div class="fld"><label id="lblTipo">Tipo</label><div class="seg" role="radiogroup" aria-labelledby="lblTipo">${["A", "B"].map((t) => `<button type="button" role="radio" data-v="${t}" aria-checked="${f.tipo === t}" tabindex="${f.tipo === t || (!["A", "B"].includes(f.tipo) && t === "A") ? 0 : -1}">${t}</button>`).join("")}</div></div>
+      <div class="fld doc"><label for="eCuit">CUIT / DNI</label><input id="eCuit" name="cuit" value="${esc(f.doc ? fmtDoc(f.doc) : "")}" placeholder="Vacío = cons. final"${inv("cuit")}></div>
+      <div class="fld grow"><label for="eProd">Producto / Servicio</label><input id="eProd" name="producto" value="${esc(f.producto)}"${inv("producto")}></div>
+      <div class="fld sm"><label for="eCant">Cantidad</label><input id="eCant" name="cantidad" inputmode="decimal" value="${esc(aTexto(f.cantidad))}"${inv("cantidad")}></div>
+      <div class="fld md"><label for="ePrecio">Precio unit. ${estado?.precioIncluyeIva ? "(con IVA)" : "(sin IVA)"}</label><input id="ePrecio" name="precio" inputmode="decimal" value="${esc(aTexto(f.precio))}"${inv("precio")}></div>
+    </div>
+    <div class="edit-foot">
+      ${(f.errores || []).map((e) => `<span class="err">${esc(e)}</span>`).join("")}
+      <span class="calc num" id="eCalc"></span>
+      <span class="hint">Enter guarda · Esc cancela</span>
+      <button type="button" class="btn sm" id="eCancelar">Cancelar</button>
+      <button type="submit" class="btn sm primary" id="eGuardar" ${guardando ? "disabled" : ""}>${guardando ? '<span class="spin"></span>Validando…' : "Guardar y validar"}</button>
+    </div>
+  </form></td></tr>`
+}
+
+// Misma lógica que src/excel.js → aNumero
+function aNumero(v) {
+  let s = String(v ?? "").replace(/[^\d.,-]/g, "")
+  if (!s) return NaN
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".")
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "")
+  return Number(s)
+}
+function calcEdit() {
+  const c = aNumero($("#eCant").value), p = aNumero($("#ePrecio").value), out = $("#eCalc")
+  if (!(c > 0) || !(p > 0)) { out.textContent = ""; return }
+  const bruto = Math.round(c * p * 100)
+  const neto = estado?.precioIncluyeIva ? Math.round(bruto / 1.21) : bruto, iva = estado?.precioIncluyeIva ? bruto - neto : Math.round(neto * 0.21)
+  out.innerHTML = `Neto ${ars(neto / 100)} · IVA ${ars(iva / 100)} · Total <b>${ars((neto + iva) / 100)}</b>`
+}
+
+function abrirEdicion(n) {
+  editando = n
+  renderLote()
+  const f = lote.filas.find((x) => x.fila === n)
+  const form = $("#editForm")
+  let tipo = f.tipo
+  const radios = [...form.querySelectorAll(".seg button")]
+  const setTipo = (t, foco) => { tipo = t; radios.forEach((b) => { b.setAttribute("aria-checked", String(b.dataset.v === t)); b.tabIndex = b.dataset.v === t ? 0 : -1; if (foco && b.dataset.v === t) b.focus() }) }
+  radios.forEach((b) => {
+    b.onclick = () => setTipo(b.dataset.v)
+    b.onkeydown = (e) => { if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) { e.preventDefault(); setTipo(b.dataset.v === "A" ? "B" : "A", true) } }
+  })
+  form.querySelectorAll("input").forEach((i) => (i.oninput = calcEdit))
+  calcEdit()
+  form.onkeydown = (e) => { if (e.key === "Escape") { e.preventDefault(); cerrarEdicion() } else if (e.key === "Enter" && (e.target.tagName === "INPUT" || e.target.closest(".seg"))) { e.preventDefault(); form.requestSubmit() } }
+  $("#eCancelar").onclick = cerrarEdicion
+  form.onsubmit = async (e) => {
+    e.preventDefault()
+    if (guardando) return
+    const body = { tipo, cuit: $("#eCuit").value, producto: $("#eProd").value, cantidad: $("#eCant").value, precio: $("#ePrecio").value }
+    guardando = true; const b = $("#eGuardar"); b.disabled = true; b.innerHTML = '<span class="spin"></span>Validando…'
+    try {
+      lote = await api(`/api/lotes/${lote.id}/filas/${n}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      const g = lote.filas.find((x) => x.fila === n)
+      guardando = false
+      if (g.estado === "error") { abrirEdicion(n); return } // sigue con error: queda abierta mostrando el motivo
+      editando = null; renderLote(); document.querySelector(`#fila-${n} [data-edit]`)?.focus()
+    } catch (err) {
+      guardando = false; b.disabled = false; b.textContent = "Guardar y validar"
+      const foot = form.querySelector(".edit-foot")
+      foot.querySelectorAll(".err").forEach((x) => x.remove())
+      foot.insertAdjacentHTML("afterbegin", (err.errores || [err.message]).map((m) => `<span class="err">${esc(m)}</span>`).join(""))
+      const marcar = { cuit: /CUIT|DNI|Inscripto|padrón|corresponde/i, producto: /Producto/, cantidad: /^cantidad/, precio: /^precio/ }
+      const ids = { cuit: "#eCuit", producto: "#eProd", cantidad: "#eCant", precio: "#ePrecio" }
+      for (const [k, re] of Object.entries(marcar)) $(ids[k]).setAttribute("aria-invalid", String((err.errores || []).some((m) => re.test(m))))
+      const malo = form.querySelector('input[aria-invalid="true"]'); if (malo) { malo.focus(); malo.select() }
+    }
+  }
+  // Foco en el campo con problema (o en el producto)
+  const e0 = (f.errores || [])[0] || ""
+  const foco = /^tipo/.test(e0) ? radios.find((b) => b.tabIndex === 0) : /^cantidad/.test(e0) ? $("#eCant") : /^precio/.test(e0) ? $("#ePrecio") : /CUIT|DNI|Inscripto|corresponde|padrón/i.test(e0) ? (/corresponde/.test(e0) ? radios.find((b) => b.tabIndex === 0) : $("#eCuit")) : $("#eProd")
+  foco?.focus(); if (foco?.select) foco.select()
+}
+function cerrarEdicion() { const n = editando; editando = null; renderLote(); document.querySelector(`#fila-${n} [data-edit]`)?.focus() }
+
+async function omitir(n, valor) {
+  try { lote = await api(`/api/lotes/${lote.id}/filas/${n}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ omitir: valor }) }); renderLote(); document.querySelector(`#fila-${n} button`)?.focus() } catch (e) { alertaLote(e.message) }
+}
+function alertaLote(msg) { const n = document.createElement("div"); n.className = "notice red"; n.textContent = msg; $("#loteBody").prepend(n) }
+
+function renderLote() {
+  const r = resumen(), hecho = !!terminado
+  $("#loteHead").innerHTML = `<div class="file"><span class="xls">XLSX</span><div style="min-width:0"><span class="name">${esc(lote.nombre)}</span><small>${lote.filas.length} fila${lote.filas.length === 1 ? "" : "s"} · ${hecho ? "emisión terminada" : emitiendo ? "emitiendo…" : "revisá antes de emitir"}</small></div></div><button class="btn sm" id="btnCambiar" ${emitiendo ? "disabled" : ""}>${hecho ? "Subir otro Excel" : "Cambiar archivo"}</button>`
+  $("#btnCambiar").onclick = () => { lote = null; terminado = null; editando = null; renderDrop() }
+
+  const stats = hecho
+    ? [["Emitidas", r.emitidas, "green"], ["Total facturado", ars(r.totalEmitido)], ["Con error", r.errores, r.errores ? "red" : ""], ["Ya emitidas antes", r.ya]]
+    : [["A emitir", r.aEmitir], ["Total a facturar", ars(r.totalAEmitir)], ["Con error", r.errores, r.errores ? "red" : ""], ["Ya emitidas antes", r.ya]]
+  const avisos = (lote.avisos || []).map((a) => `<div class="notice amber">${esc(a)}</div>`).join("")
+  const fin = hecho ? `<div class="notice green"><span>${r.emitidas ? `Listo: ${r.emitidas} factura${r.emitidas === 1 ? "" : "s"} emitida${r.emitidas === 1 ? "" : "s"} por ${ars(r.totalEmitido)}. Los PDFs están en el historial.` : "No se emitió ninguna factura."}</span><a class="btn" href="/api/lotes/${lote.id}/resultado">Descargar resultado (.xlsx)</a></div>` : ""
+  const frenado = terminado?.motivo ? `<div class="notice red">${esc(terminado.motivo)}</div>` : ""
+
+  $("#loteBody").innerHTML = `
+    <div class="stats">${stats.map(([l, v, c]) => `<div class="stat"><label>${l}</label><b class="num ${c || ""}">${v}</b></div>`).join("")}</div>
+    ${avisos}${frenado}${fin}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Fila</th><th>Tipo</th><th>Cliente</th><th>Producto / Servicio</th><th class="r">Cant.</th><th class="r">Neto</th><th class="r">IVA 21%</th><th class="r">Total</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="filas">${lote.filas.map(filaHtml).join("")}</tbody>
+    </table></div>
+    ${hecho ? "" : `<div class="actionbar" id="actionbar">${actionbarHtml(r)}</div>`}`
+  bindEmitir()
+  document.querySelectorAll("[data-edit]").forEach((b) => (b.onclick = () => abrirEdicion(+b.dataset.edit)))
+  document.querySelectorAll("[data-omitir]").forEach((b) => (b.onclick = () => omitir(+b.dataset.omitir, true)))
+  document.querySelectorAll("[data-incluir]").forEach((b) => (b.onclick = () => omitir(+b.dataset.incluir, false)))
+}
+
+function actionbarHtml(r) {
+  if (emitiendo) {
+    const total = lote.filas.filter((f) => f._enLote).length, listas = lote.filas.filter((f) => f._enLote && !["a emitir", "emitiendo"].includes(f.estado)).length
+    return `<div class="progress"><div class="track"><div class="bar" style="transform:scaleX(${total ? listas / total : 0})"></div></div><small class="num">Emitiendo ${Math.min(listas + 1, total)} de ${total}… no cierres esta pestaña.</small></div><button class="btn primary lg" disabled><span class="spin"></span>Emitiendo</button>`
+  }
+  if (editando != null) return `<span class="dim">Guardá o cancelá la fila que estás editando para poder emitir.</span><button class="btn primary lg" disabled>Emitir ${r.aEmitir} factura${r.aEmitir === 1 ? "" : "s"} · ${ars(r.totalAEmitir)}</button>`
+  const partes = []
+  if (r.errores) partes.push(`${r.errores} fila${r.errores === 1 ? "" : "s"} con error (corregilas o quedan afuera)`)
+  if (r.omitidas) partes.push(`${r.omitidas} omitida${r.omitidas === 1 ? "" : "s"}`)
+  const txt = r.aEmitir ? `${partes.length ? partes.join(" · ") + ". " : ""}Revisá los importes antes de emitir.` : "No hay filas para emitir."
+  return `<span class="dim">${txt}</span><button class="btn primary lg" id="btnEmitir" ${r.aEmitir ? "" : "disabled"}>Emitir ${r.aEmitir} factura${r.aEmitir === 1 ? "" : "s"} · ${ars(r.totalAEmitir)}</button>`
+}
+function bindEmitir() { const b = $("#btnEmitir"); if (b) b.onclick = abrirConfirm }
+
+function actualizarFila(f) {
+  const i = lote.filas.findIndex((x) => x.fila === f.fila)
+  if (i >= 0) lote.filas[i] = { ...lote.filas[i], ...f }
+  const tr = document.getElementById(`fila-${f.fila}`)
+  if (tr) tr.outerHTML = filaHtml(lote.filas[i])
+  const ab = $("#actionbar"); if (ab) ab.innerHTML = actionbarHtml(resumen())
+}
+
+// ─── Confirmación ────────────────────────────────────────────────────────────
+let focoPrevio = null
+function abrirConfirm() {
+  const r = resumen(), prod = estado.ambiente === "produccion"
+  $("#confirmTitle").textContent = prod ? `¿Emitir ${r.aEmitir} factura${r.aEmitir === 1 ? "" : "s"} reales en ARCA?` : `¿Emitir ${r.aEmitir} factura${r.aEmitir === 1 ? "" : "s"} de prueba?`
+  $("#confirmText").textContent = `${lote.nombre} · ${r.aEmitir} comprobante${r.aEmitir === 1 ? "" : "s"}`
+  $("#confirmTotal").textContent = ars(r.totalAEmitir)
+  $("#confirmNote").textContent = prod ? "Una factura emitida no se puede borrar: para anularla hay que hacer una nota de crédito." : estado.ambiente === "demo" ? "Modo demo: no se conecta con ARCA, los CAE son inventados." : "Homologación: las facturas no tienen validez fiscal."
+  const b = $("#btnConfirmar"); b.className = `btn ${prod ? "danger" : "primary"}`; b.textContent = prod ? "Emitir facturas reales" : "Emitir"
+  focoPrevio = document.activeElement
+  $("#confirm").hidden = false
+  $("#btnCancelar").focus()
+}
+function cerrarConfirm() { $("#confirm").hidden = true; focoPrevio?.focus?.() }
+$("#btnCancelar").onclick = cerrarConfirm
+$("#confirm").onclick = (e) => { if (e.target.id === "confirm") cerrarConfirm() }
+document.addEventListener("keydown", (e) => {
+  if ($("#confirm").hidden) return
+  if (e.key === "Escape") cerrarConfirm()
+  if (e.key === "Tab") { const a = $("#btnCancelar"), b = $("#btnConfirmar"); if (e.shiftKey && document.activeElement === a) { e.preventDefault(); b.focus() } else if (!e.shiftKey && document.activeElement === b) { e.preventDefault(); a.focus() } }
+})
+$("#btnConfirmar").onclick = () => { cerrarConfirm(); emitir() }
+
+async function emitir() {
+  emitiendo = true
+  lote.filas.forEach((f) => (f._enLote = f.estado === "a emitir"))
+  renderLote()
+  let motivo = null
+  try {
+    const r = await fetch(`/api/lotes/${lote.id}/emitir`, { method: "POST" })
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `Error ${r.status}`)
+    const reader = r.body.getReader(), dec = new TextDecoder()
+    let buf = ""
+    for (;;) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buf += dec.decode(value, { stream: true })
+      let i
+      while ((i = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 1)
+        if (!line.trim()) continue
+        const ev = JSON.parse(line)
+        if (ev.tipo === "fila") actualizarFila(ev.fila)
+        else if (ev.tipo === "frenado") motivo = ev.motivo
+        else if (ev.tipo === "error") motivo = ev.error
+      }
+    }
+  } catch (e) { motivo = `Se perdió la conexión con el panel: ${e.message}. Volvé a subir el mismo Excel para ver qué se emitió.` }
+  emitiendo = false
+  terminado = { motivo }
+  renderLote()
+  cargarHistorial()
+  cargarArchivos()
+}
+
+// ─── Historial ───────────────────────────────────────────────────────────────
+async function cargarHistorial() {
+  try { hist = await api("/api/historial") } catch { hist = [] }
+  renderHistorial()
+}
+// ─── Menú desplegable propio (nunca <select> nativo) ────────────────────────
+// Botón con la opción actual + lista con estado activo · ↑ ↓ Enter Esc · cierra al tocar afuera
+const CHEVRON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
+const menus = []
+function crearMenu(el, { nombre, porDefecto, opciones, onChange, conBuscador }) {
+  const m = { el, valor: porDefecto, abierto: false, activo: 0, filtro: "" }
+  const uid = el.id + "-list"
+  const visibles = () => opciones().filter((o) => o.grupo || !m.filtro || o.label.toLowerCase().includes(m.filtro.toLowerCase()))
+  const elegibles = () => visibles().filter((o) => !o.grupo)
+  m.render = () => {
+    const sel = opciones().find((o) => o.value === m.valor) || opciones().find((o) => o.value === porDefecto)
+    el.innerHTML = `<button type="button" class="menu-btn ${m.valor !== porDefecto ? "on" : ""}" aria-haspopup="listbox" aria-expanded="${m.abierto}" aria-controls="${uid}"><span class="k">${nombre}:</span><span class="v">${esc(sel?.label || "")}</span>${CHEVRON}</button>
+      <div class="menu-pop" ${m.abierto ? "" : "hidden"}>${conBuscador ? `<input class="menu-search" placeholder="Buscar…" value="${esc(m.filtro)}" autocomplete="off">` : ""}<div class="menu-list" id="${uid}" role="listbox" tabindex="-1" aria-label="${nombre}">${listaHtml()}</div></div>`
+    const btn = el.querySelector(".menu-btn")
+    btn.onclick = () => (m.abierto ? cerrar(true) : abrir())
+    btn.onkeydown = (e) => { if (["ArrowDown", "ArrowUp"].includes(e.key) && !m.abierto) { e.preventDefault(); abrir() } else teclas(e) }
+    const search = el.querySelector(".menu-search")
+    if (search) { search.oninput = () => { m.filtro = search.value; m.activo = 0; el.querySelector(".menu-list").innerHTML = listaHtml(); bindOpts() }; search.onkeydown = teclas }
+    el.querySelector(".menu-list").onkeydown = teclas
+    bindOpts()
+  }
+  function listaHtml() {
+    const v = visibles(); let i = -1
+    if (!v.some((o) => !o.grupo)) return '<div class="menu-empty">Sin resultados</div>'
+    return v.map((o) => {
+      if (o.grupo) return `<div class="menu-group">${esc(o.grupo)}</div>`
+      i++
+      return `<div class="menu-opt ${i === m.activo ? "act" : ""}" role="option" id="${uid}-${i}" data-i="${i}" aria-selected="${o.value === m.valor}"><span class="ck">${o.value === m.valor ? "✓" : ""}</span><span class="t">${esc(o.label)}</span>${o.count != null ? `<span class="c">${o.count}</span>` : ""}</div>`
+    }).join("")
+  }
+  function bindOpts() {
+    el.querySelectorAll(".menu-opt").forEach((n) => {
+      n.onmousemove = () => { if (m.activo !== +n.dataset.i) { m.activo = +n.dataset.i; marcar() } }
+      n.onclick = () => elegir(+n.dataset.i)
+    })
+    marcar()
+  }
+  function marcar() {
+    el.querySelectorAll(".menu-opt").forEach((n) => n.classList.toggle("act", +n.dataset.i === m.activo))
+    const a = el.querySelector(`#${uid}-${m.activo}`)
+    const list = el.querySelector(".menu-list")
+    if (list) list.setAttribute("aria-activedescendant", a ? a.id : "")
+    a?.scrollIntoView({ block: "nearest" })
+  }
+  function abrir() {
+    menus.forEach((x) => x !== m && x.abierto && x.cerrar())
+    m.abierto = true; m.filtro = ""
+    m.activo = Math.max(0, elegibles().findIndex((o) => o.value === m.valor))
+    m.render()
+    ;(el.querySelector(".menu-search") || el.querySelector(".menu-list")).focus()
+  }
+  function cerrar(foco) { m.abierto = false; m.render(); if (foco) el.querySelector(".menu-btn").focus() }
+  function elegir(i) { const o = elegibles()[i]; if (!o) return; m.valor = o.value; m.abierto = false; m.render(); onChange(o.value); el.querySelector(".menu-btn").focus() }
+  function teclas(e) {
+    if (!m.abierto) return
+    const n = elegibles().length
+    if (e.key === "ArrowDown") { e.preventDefault(); m.activo = (m.activo + 1) % n; marcar() }
+    else if (e.key === "ArrowUp") { e.preventDefault(); m.activo = (m.activo - 1 + n) % n; marcar() }
+    else if (e.key === "Home") { e.preventDefault(); m.activo = 0; marcar() }
+    else if (e.key === "End") { e.preventDefault(); m.activo = n - 1; marcar() }
+    else if (e.key === "Enter") { e.preventDefault(); elegir(m.activo) }
+    else if (e.key === "Escape") { e.preventDefault(); cerrar(true) }
+    else if (e.key === "Tab") cerrar(false)
+  }
+  m.cerrar = () => cerrar(false)
+  m.set = (v) => { m.valor = v; m.render() }
+  m.porDefecto = porDefecto
+  menus.push(m)
+  m.render()
+  return m
+}
+document.addEventListener("pointerdown", (e) => menus.forEach((m) => m.abierto && !m.el.contains(e.target) && m.cerrar()))
+
+// ─── Historial ───────────────────────────────────────────────────────────────
+const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+const hoy = () => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}` }
+const clienteKey = (h) => h.doc || "CF"
+const clienteLabel = (h) => h.nombre || (h.doc ? (h.doc.length === 11 ? `CUIT ${fmtDoc(h.doc)}` : `DNI ${h.doc}`) : "Consumidor Final")
+const contar = (l, f) => l.reduce((acc, h) => ((acc[f(h)] = (acc[f(h)] || 0) + 1), acc), {})
+
+function enPeriodo(h, p) {
+  if (p === "todo") return true
+  const f = h.fecha || "", t = hoy()
+  if (p === "este-mes") return f.slice(0, 6) === t.slice(0, 6)
+  if (p === "mes-anterior") { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return f.slice(0, 6) === `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}` }
+  if (p === "30d") { const d = new Date(Date.now() - 30 * 864e5); return f >= `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}` }
+  if (p.startsWith("m:")) return f.slice(0, 6) === p.slice(2)
+  return true
+}
+
+const fPeriodo = crearMenu($("#fPeriodo"), { nombre: "Período", porDefecto: "todo", onChange: renderHistorial, opciones: () => {
+  const porMes = contar(hist, (h) => (h.fecha || "").slice(0, 6))
+  const meses = Object.keys(porMes).filter(Boolean).sort().reverse()
+  return [{ value: "todo", label: "Todo el historial", count: hist.length }, { value: "este-mes", label: "Este mes" }, { value: "mes-anterior", label: "Mes anterior" }, { value: "30d", label: "Últimos 30 días" },
+    ...(meses.length ? [{ grupo: "Por mes" }] : []), ...meses.map((m) => ({ value: `m:${m}`, label: `${MESES[+m.slice(4) - 1]} ${m.slice(0, 4)}`, count: porMes[m] }))]
+} })
+const fCliente = crearMenu($("#fCliente"), { nombre: "Cliente", porDefecto: "", conBuscador: true, onChange: renderHistorial, opciones: () => {
+  const vistos = new Map()
+  hist.forEach((h) => { const k = clienteKey(h); const v = vistos.get(k) || { value: k, label: clienteLabel(h), count: 0 }; v.count++; vistos.set(k, v) })
+  return [{ value: "", label: "Todos los clientes", count: hist.length }, ...[...vistos.values()].sort((a, b) => (a.value === "CF") - (b.value === "CF") || a.label.localeCompare(b.label))]
+} })
+const fArchivo = crearMenu($("#fArchivo"), { nombre: "Excel", porDefecto: "", onChange: renderHistorial, opciones: () => {
+  const n = contar(hist, (h) => h.archivo || "")
+  const orden = [...new Set(hist.map((h) => h.archivo || ""))]
+  return [{ value: "", label: "Todos los archivos", count: hist.length }, ...orden.filter(Boolean).map((a) => ({ value: a, label: a, count: n[a] }))]
+} })
+
+function filtrados() {
+  const q = $("#q").value.trim().toLowerCase(), qd = q.replace(/\D/g, "")
+  return hist.filter((h) => (!filtroTipo || (filtroTipo === "NC" ? h.esNC : h.tipo === filtroTipo && !h.esNC)) && enPeriodo(h, fPeriodo.valor) && (!fCliente.valor || clienteKey(h) === fCliente.valor) && (!fArchivo.valor || h.archivo === fArchivo.valor) &&
+    (!q || [h.nombre, h.producto, h.comprobante, h.archivo, h.cae].some((v) => String(v || "").toLowerCase().includes(q)) || (qd.length >= 3 && String(h.doc || "").includes(qd))))
+}
+
+// Números del mes arriba de todo (KpiCard del panel; la violeta es la plata)
+function renderKpis() {
+  const t = hoy(), mes = t.slice(0, 6), dia = t.slice(6)
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1)
+  const ant = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`
+  const deMes = hist.filter((h) => (h.fecha || "").startsWith(mes))
+  const deAnt = hist.filter((h) => (h.fecha || "").startsWith(ant) && (h.fecha || "").slice(6) <= dia) // mismo tramo del mes anterior
+  const sum = (l, k) => l.reduce((s, h) => s + (h.esNC ? -1 : 1) * (h[k] || 0), 0)
+  const tot = sum(deMes, "total"), totAnt = sum(deAnt, "total")
+  const delta = totAnt ? Math.round((tot / totAnt - 1) * 100) : null
+  const nomMes = MESES[+mes.slice(4) - 1].toLowerCase(), nomAnt = MESES[d.getMonth()].toLowerCase()
+  const ncMes = deMes.filter((h) => h.esNC).length
+  const a = deMes.filter((h) => h.tipo === "A" && !h.esNC).length
+  const card = (l, v, n, cls = "") => `<section class="kpi ${cls}" aria-label="${esc(l)}"><span class="l">${l}</span><b class="v">${v}</b><span class="n">${n}</span></section>`
+  $("#kpis").innerHTML = [
+    card(`Facturado en ${nomMes}`, ars(tot), delta == null ? `${deMes.length} factura${deMes.length === 1 ? "" : "s"}` : `${delta >= 0 ? "+" : ""}${delta}% vs mismos días de ${nomAnt}`, "is-violet"),
+    card("Facturas del mes", deMes.length - ncMes, deMes.length ? `${a} A · ${deMes.length - ncMes - a} B${ncMes ? ` · ${ncMes} NC` : ""}` : "Todavía ninguna"),
+    card("IVA débito del mes", ars(sum(deMes, "iva")), "Lo que va a la declaración de IVA"),
+    card("Clientes facturados", new Set(deMes.map(clienteKey)).size, hist[0] ? `Última factura el ${fmtFecha(hist[0].fecha)}` : "Sin facturas todavía"),
+  ].join("")
+}
+
+function renderHistorial() {
+  renderKpis()
+  ;[fPeriodo, fCliente, fArchivo].forEach((m) => !m.abierto && m.render())
+  const hayFiltros = filtroTipo || $("#q").value.trim() || fPeriodo.valor !== "todo" || fCliente.valor || fArchivo.valor
+  $("#btnLimpiar").hidden = !hayFiltros
+  if (!hist.length) { $("#hist").innerHTML = '<div class="empty">Todavía no se emitió ninguna factura.</div>'; return }
+  const l = filtrados()
+  if (!l.length) { $("#hist").innerHTML = '<div class="empty">Ninguna factura coincide con los filtros.</div>'; return }
+  const sum = (k) => l.reduce((s, h) => s + (h.esNC ? -1 : 1) * (h[k] || 0), 0)
+  const nFact = l.filter((h) => !h.esNC).length, nNC = l.length - nFact
+  const max = 300
+  $("#hist").innerHTML = `
+    <div class="stats hist-stats">
+      <div class="stat"><label>Comprobantes</label><b class="num">${nFact}${nNC ? `<small class="neg" style="font-size:13px;font-weight:600"> + ${nNC} NC</small>` : ""}</b></div>
+      <div class="stat"><label>Neto gravado</label><b class="num">${ars(sum("neto"))}</b></div>
+      <div class="stat"><label>IVA 21%</label><b class="num">${ars(sum("iva"))}</b></div>
+      <div class="stat"><label>Total ${nNC ? "neto de NC" : "facturado"}</label><b class="num">${ars(sum("total"))}</b></div>
+    </div>
+    <div class="table-wrap"><table>
+    <thead><tr><th>Fecha</th><th>Comprobante</th><th>Cliente</th><th>Producto / Servicio</th><th class="r">Total</th><th>CAE</th><th></th></tr></thead>
+    <tbody>${l.slice(0, max).map((h) => `<tr>
+      <td class="num">${fmtFecha(h.fecha)}</td>
+      <td class="mono">${esc(h.comprobante)}${h.estado === "revisar" ? ' <span class="pill pendiente">Revisar</span>' : ""}${marcaNC(h)}</td>
+      <td>${h.nombre ? esc(h.nombre) : h.doc ? "" : '<span class="dim">Consumidor Final</span>'}${h.doc ? `<span class="sub mono">${esc(fmtDoc(h.doc))}</span>` : ""}</td>
+      <td>${esc(h.producto)}<span class="sub">${h.esNC ? `Anula ${esc(h.asociadaComprobante || "")}` : `${esc(h.archivo)} · fila ${h.fila}`}</span></td>
+      <td class="r num"><b class="${h.esNC ? "neg" : ""}">${h.esNC ? "− " : ""}${ars(h.total)}</b>${!h.esNC && h.acreditado ? `<span class="sub neg">− ${ars(h.acreditado)} en NC</span>` : ""}</td>
+      <td class="mono dim">${esc(h.cae)}</td>
+      <td><div class="row-acts">${h.pdf ? `<a class="link" href="/api/pdf?key=${encodeURIComponent(h.key)}" target="_blank" rel="noopener">PDF</a>` : ""}${btnAnular(h)}</div></td>
+    </tr>`).join("")}</tbody></table></div>
+    ${l.length > max ? `<div class="hist-foot"><span>Mostrando las ${max} más recientes de ${l.length}. Usá los filtros o exportá para ver todas.</span></div>` : ""}`
+}
+
+function limpiarFiltros() {
+  $("#q").value = ""; filtroTipo = ""
+  document.querySelectorAll("#view-facturas .chip").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.tipo === "")))
+  ;[fPeriodo, fCliente, fArchivo].forEach((m) => (m.valor = m.porDefecto))
+  renderHistorial()
+}
+$("#btnLimpiar").onclick = limpiarFiltros
+$("#q").oninput = renderHistorial
+document.querySelectorAll("#view-facturas .chip").forEach((c) => (c.onclick = () => {
+  filtroTipo = c.dataset.tipo
+  document.querySelectorAll("#view-facturas .chip").forEach((x) => x.setAttribute("aria-pressed", String(x === c)))
+  renderHistorial()
+}))
+
+// Exporta lo filtrado a CSV (separador ; y coma decimal, se abre directo en Excel en español)
+$("#btnExportar").onclick = () => {
+  const l = filtrados()
+  const n = (x) => (x ?? 0).toFixed(2).replace(".", ",")
+  const cel = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`
+  const filas = [["Fecha", "Comprobante", "Tipo", "CUIT/DNI", "Cliente", "Producto/Servicio", "Cantidad", "Neto", "IVA 21%", "Total", "CAE", "Vto. CAE", "Archivo", "Fila"],
+    ...l.map((h) => [fmtFecha(h.fecha), h.comprobante, h.tipo, h.doc || "", clienteLabel(h), h.producto, String(h.cantidad ?? "").replace(".", ","), n(h.neto), n(h.iva), n(h.total), h.cae, fmtFecha(h.caeVto), h.archivo, h.fila])]
+  const csv = "﻿" + filas.map((f) => f.map(cel).join(";")).join("\r\n")
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }))
+  a.download = `facturas-garage-libertador-${hoy()}.csv`
+  a.click(); URL.revokeObjectURL(a.href)
+}
+
+// ─── Nota de crédito ─────────────────────────────────────────────────────────
+const restanteDe = (h) => Math.round((h.total - (h.acreditado || 0)) * 100) / 100
+const marcaNC = (h) => h.esNC ? ' <span class="pill nc">Nota de crédito</span>' : h.acreditado ? (restanteDe(h) <= 0 ? ' <span class="pill anulada">Anulada</span>' : ' <span class="pill anulada">NC parcial</span>') : ""
+const btnAnular = (h) => (!h.esNC && h.estado === "emitida" && restanteDe(h) > 0 ? `<button class="btn sm ghost" data-anular="${esc(h.key)}">Anular</button>` : "")
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-anular]"); if (b) abrirNC(b.dataset.anular, b) })
+
+let ncFocoPrevio = null
+async function abrirNC(key, origen) {
+  let h = hist.find((x) => x.key === key)
+  if (!h) { await cargarHistorial(); h = hist.find((x) => x.key === key) }
+  if (!h) return
+  const restante = restanteDe(h), prod = estado?.ambiente === "produccion"
+  let modo = "total"
+  ncFocoPrevio = origen || document.activeElement
+  const box = $("#ncBox")
+  box.innerHTML = `
+    <h3 id="ncTitle">Nota de crédito</h3>
+    <p>Para la factura <b class="mono" style="color:var(--white)">${esc(h.comprobante)}</b> del ${fmtFecha(h.fecha)}<br>${esc(h.nombre || (h.doc ? fmtDoc(h.doc) : "Consumidor Final"))} · ${esc(h.producto)}</p>
+    ${h.acreditado ? `<p class="neg">Ya tiene ${ars(h.acreditado)} acreditados. Queda ${ars(restante)}.</p>` : ""}
+    <div class="fld"><label id="ncModoLbl">Qué querés anular</label><div class="seg" role="radiogroup" aria-labelledby="ncModoLbl"><button type="button" role="radio" data-m="total" aria-checked="true" tabindex="0">${h.acreditado ? "Todo lo que queda" : "Toda la factura"}</button><button type="button" role="radio" data-m="parcial" aria-checked="false" tabindex="-1">Un monto</button></div></div>
+    <div class="fld" id="ncMontoFld" hidden><label for="ncMonto">Importe a acreditar, con IVA (máx. ${ars(restante)})</label><input id="ncMonto" inputmode="decimal" placeholder="Ej.: 15.000"></div>
+    <div class="fld"><label for="ncMotivo">Motivo (sale impreso en la nota)</label><input id="ncMotivo" placeholder="Ej.: se facturó dos veces" maxlength="120"></div>
+    <div class="total num" id="ncTotal"></div><p class="calc num" id="ncCalc"></p>
+    <p style="margin-top:12px">${prod ? "Se emite un comprobante real en ARCA y no se puede deshacer." : estado?.ambiente === "demo" ? "Modo demo: no se conecta con ARCA, el CAE es inventado." : "Homologación: sin validez fiscal."}</p>
+    <div id="ncErr"></div>
+    <div class="actions"><button class="btn" id="ncCancelar">Cancelar</button><button class="btn ${prod ? "danger" : "primary"}" id="ncEmitir">Emitir nota de crédito</button></div>`
+  const radios = [...box.querySelectorAll(".seg button")]
+  const calc = () => {
+    const t = modo === "total" ? restante : aNumero($("#ncMonto").value)
+    const ok = t > 0 && t <= restante + 0.001
+    $("#ncTotal").innerHTML = ok ? `<span class="neg">− ${ars(t)}</span>` : `<span class="dim">${ars(0)}</span>`
+    const neto = ok ? (modo === "total" && !h.acreditado ? h.neto : Math.round((t / 1.21) * 100) / 100) : 0
+    $("#ncCalc").textContent = ok ? `Neto ${ars(neto)} · IVA ${ars(Math.round((t - neto) * 100) / 100)}` : modo === "parcial" && $("#ncMonto").value ? `Tiene que ser mayor a cero y hasta ${ars(restante)}` : ""
+    $("#ncEmitir").disabled = !ok
+  }
+  const setModo = (m, foco) => {
+    modo = m
+    radios.forEach((b) => { const on = b.dataset.m === m; b.setAttribute("aria-checked", String(on)); b.tabIndex = on ? 0 : -1; if (on && foco) b.focus() })
+    $("#ncMontoFld").hidden = m !== "parcial"
+    if (m === "parcial") $("#ncMonto").focus()
+    calc()
+  }
+  radios.forEach((b) => { b.onclick = () => setModo(b.dataset.m); b.onkeydown = (e) => { if (["ArrowLeft", "ArrowRight"].includes(e.key)) { e.preventDefault(); setModo(modo === "total" ? "parcial" : "total", true) } } })
+  $("#ncMonto").oninput = calc
+  $("#ncCancelar").onclick = cerrarNC
+  $("#ncEmitir").onclick = async () => {
+    const b = $("#ncEmitir"); b.disabled = true; b.innerHTML = '<span class="spin"></span>Emitiendo…'; $("#ncErr").innerHTML = ""
+    try {
+      const r = await api("/api/nota-credito", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key, modo, total: $("#ncMonto").value, motivo: $("#ncMotivo").value }) })
+      box.innerHTML = `
+        <h3 id="ncTitle">Nota de crédito emitida</h3>
+        <p>${r.factura.restante > 0 ? `La factura ${esc(r.factura.comprobante)} queda con ${ars(r.factura.restante)} sin acreditar.` : `La factura ${esc(r.factura.comprobante)} quedó anulada.`}</p>
+        <div class="ok-box"><b class="mono">${esc(r.nc.comprobante)}</b><small class="num">− ${ars(r.nc.total)} · CAE ${esc(r.nc.cae)} · vence ${fmtFecha(r.nc.caeVto)}</small></div>
+        <div class="actions"><a class="btn" href="/api/pdf?key=${encodeURIComponent(r.nc.key)}" target="_blank" rel="noopener">Ver PDF</a><button class="btn primary" id="ncCerrar">Listo</button></div>`
+      $("#ncCerrar").onclick = cerrarNC; $("#ncCerrar").focus()
+      await cargarHistorial()
+      if (location.hash.startsWith("#archivos/")) ruta()
+    } catch (e) { b.disabled = false; b.textContent = "Emitir nota de crédito"; $("#ncErr").innerHTML = `<div class="notice red" style="margin-top:12px">${esc(e.message)}</div>` }
+  }
+  $("#ncModal").hidden = false
+  radios[0].focus()
+  calc()
+}
+function cerrarNC() { $("#ncModal").hidden = true; if (ncFocoPrevio?.isConnected) ncFocoPrevio.focus() }
+$("#ncModal").onclick = (e) => { if (e.target.id === "ncModal") cerrarNC() }
+document.addEventListener("keydown", (e) => {
+  if ($("#ncModal").hidden) return
+  if (e.key === "Escape") { e.preventDefault(); cerrarNC() }
+  if (e.key === "Tab") {
+    const f = [...$("#ncBox").querySelectorAll("button:not([disabled]), input:not([hidden]), a[href]")].filter((x) => x.offsetParent && x.tabIndex >= 0)
+    if (!f.length) return
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f.at(-1).focus() } else if (!e.shiftKey && document.activeElement === f.at(-1)) { e.preventDefault(); f[0].focus() }
+  }
+})
+
+// ─── Archivos procesados ─────────────────────────────────────────────────────
+let archivos = [], filtroArch = ""
+const PILL_ARCH = { emitido: ["emitido", "Emitido"], parcial: ["parcial", "Parcial"], "sin emitir": ["sinemitir", "Sin emitir"] }
+const fechaHora = (iso) => { if (!iso) return ""; const d = new Date(iso); return `${d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })} a las ${d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}` }
+const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`
+const CHEV_R = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>'
+
+async function cargarArchivos() {
+  try { archivos = await api("/api/archivos") } catch { archivos = [] }
+  const pend = archivos.filter((a) => a.estado !== "emitido").length
+  const n = $("#nArchivos"); n.hidden = !pend; n.textContent = pend
+  renderArchivos()
+}
+function renderArchivos() {
+  const q = $("#qArch").value.trim().toLowerCase()
+  const l = archivos.filter((a) => (!filtroArch || a.estado === filtroArch) && (!q || a.nombre.toLowerCase().includes(q)))
+  $("#archSub").textContent = archivos.length ? `${plural(archivos.length, "archivo", "archivos")}, el último arriba` : "El último arriba"
+  if (!archivos.length) { $("#archList").innerHTML = '<div class="empty">Todavía no subiste ningún Excel.</div>'; return }
+  if (!l.length) { $("#archList").innerHTML = '<div class="empty">Ningún archivo coincide.</div>'; return }
+  $("#archList").innerHTML = `<ul class="files">${l.map((a) => {
+    const [cls, lbl] = PILL_ARCH[a.estado] || ["sinemitir", a.estado]
+    const cuando = a.ultimaEmision ? `Emitido el ${fechaHora(a.ultimaEmision)}` : `Subido el ${fechaHora(a.ultimaSubida || a.subidoEn)}`
+    const money = a.emitidas ? `<strong>${ars(a.totalEmitido)}</strong><small>${plural(a.emitidas, "factura", "facturas")}</small>` : `<strong class="dim">${ars(a.previa?.totalAEmitir || 0)}</strong><small>${plural(a.previa?.aEmitir || 0, "por emitir", "por emitir")}</small>`
+    return `<li><a class="file-row" href="#archivos/${encodeURIComponent(a.id)}"><span class="xls">XLSX</span><span class="who"><b>${esc(a.nombre)}</b><small>${cuando} · ${plural(a.filas, "fila", "filas")}</small></span><span class="pill-cell"><span class="pill ${cls}">${lbl}</span></span><span class="money">${money}</span><span class="go" aria-hidden="true">${CHEV_R}</span></a></li>`
+  }).join("")}</ul>`
+}
+$("#qArch").oninput = renderArchivos
+document.querySelectorAll("#chipsArch .chip").forEach((c) => (c.onclick = () => {
+  filtroArch = c.dataset.est
+  document.querySelectorAll("#chipsArch .chip").forEach((x) => x.setAttribute("aria-pressed", String(x === c)))
+  renderArchivos()
+}))
+
+async function renderArchivo(id) {
+  const v = $("#view-archivo")
+  v.innerHTML = '<div class="empty">Cargando…</div>'
+  let a
+  try { a = await api(`/api/archivos/${encodeURIComponent(id)}`) } catch (e) { v.innerHTML = `<a class="back" href="#archivos">‹ Archivos</a><div class="notice red">${esc(e.message)}</div>`; return }
+  const [cls, lbl] = PILL_ARCH[a.estado] || ["sinemitir", a.estado]
+  const em = a.emisiones || [], u = em.at(-1)
+  const errores = u ? u.errores : a.previa?.errores || 0
+  const retomar = a.estado === "emitido" ? "" : `<button class="btn primary" id="btnRetomar">${a.estado === "sin emitir" ? "Retomar y emitir" : "Completar lo que faltó"}</button>`
+  const eventos = [`<li><span class="dot">↑</span><b>Subido</b><small>${fechaHora(a.subidoEn)} · ${plural(a.filas, "fila", "filas")}${a.subidas > 1 ? ` · se cargó ${a.subidas} veces` : ""}</small></li>`]
+  em.forEach((e) => {
+    const extra = [e.editadas ? plural(e.editadas, "fila editada", "filas editadas") : "", e.omitidas ? plural(e.omitidas, "omitida", "omitidas") : "", e.errores ? plural(e.errores, "con error", "con error") : ""].filter(Boolean).join(" · ")
+    eventos.push(`<li><span class="dot ${e.errores || e.pendientes ? "warn" : "ok"}">${e.errores || e.pendientes ? "!" : "✓"}</span><b>${e.emitidas ? `Emitidas ${plural(e.emitidas, "factura", "facturas")} por ${ars(e.total)}` : "Emisión sin facturas"}</b><small>${fechaHora(e.fin)}${extra ? ` · ${extra}` : ""}</small></li>`)
+  })
+  if (!em.length) eventos.push(`<li><span class="dot">·</span><b>Sin emitir todavía</b><small>La vista previa daba ${plural(a.previa?.aEmitir || 0, "factura", "facturas")} por ${ars(a.previa?.totalAEmitir || 0)}</small></li>`)
+  v.innerHTML = `
+    <a class="back" href="#archivos">‹ Archivos</a>
+    <header class="sv-head"><div><h1>${esc(a.nombre)}</h1><p><span class="pill ${cls}" style="vertical-align:1px;margin-right:8px">${lbl}</span>${a.ultimaEmision ? `Emitido el ${fechaHora(a.ultimaEmision)}` : `Subido el ${fechaHora(a.subidoEn)}`}</p></div>
+      <div class="tools"><a class="btn" href="/api/archivos/${encodeURIComponent(a.id)}/original">Excel original</a>${u?.resultado ? `<a class="btn" href="/api/archivos/${encodeURIComponent(a.id)}/resultado">Resultado</a>` : ""}${retomar}</div></header>
+    <div class="kpis">
+      <section class="kpi is-violet"><span class="l">Facturado</span><b class="v">${ars(a.totalEmitido)}</b><span class="n">${plural(a.emitidas, "factura emitida", "facturas emitidas")}</span></section>
+      <section class="kpi"><span class="l">Filas del Excel</span><b class="v">${a.filas}</b><span class="n">${a.facturas.filter((f) => f.tipo === "A").length} A · ${a.facturas.filter((f) => f.tipo === "B").length} B emitidas</span></section>
+      <section class="kpi ${errores ? "is-warn" : ""}"><span class="l">Con error</span><b class="v">${errores}</b><span class="n">${errores ? "Quedaron sin facturar" : "Ninguna"}</span></section>
+      <section class="kpi"><span class="l">IVA facturado</span><b class="v">${ars(a.facturas.reduce((s, f) => s + (f.iva || 0), 0))}</b><span class="n">21% sobre el neto</span></section>
+    </div>
+    <div class="split">
+      <section class="card"><header class="card-head"><div><b>Facturas de este archivo</b><small>${a.facturas.length ? "Por número de fila del Excel" : "Todavía no salió ninguna"}</small></div></header>
+        ${a.facturas.length ? `<div class="table-wrap"><table><thead><tr><th>Fila</th><th>Comprobante</th><th>Cliente</th><th>Producto / Servicio</th><th class="r">Total</th><th></th></tr></thead><tbody>${a.facturas.map((h) => `<tr>
+          <td class="dim num">${h.fila}</td><td class="mono">${esc(h.comprobante)}${marcaNC(h)}<span class="sub">${fmtFecha(h.fecha)}</span></td>
+          <td>${h.nombre ? esc(h.nombre) : h.doc ? "" : '<span class="dim">Consumidor Final</span>'}${h.doc ? `<span class="sub mono">${esc(fmtDoc(h.doc))}</span>` : ""}</td>
+          <td>${esc(h.producto)}</td><td class="r num"><b>${ars(h.total)}</b></td>
+          <td><div class="row-acts">${h.pdf ? `<a class="link" href="/api/pdf?key=${encodeURIComponent(h.key)}" target="_blank" rel="noopener">PDF</a>` : ""}${btnAnular(h)}</div></td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">Cuando lo emitas, las facturas aparecen acá.</div>'}
+      </section>
+      <section class="card"><header class="card-head"><div><b>Actividad</b><small>Qué pasó con este Excel</small></div></header><ul class="timeline">${eventos.join("")}</ul></section>
+    </div>`
+  const r = $("#btnRetomar")
+  if (r) r.onclick = async () => {
+    r.disabled = true; r.innerHTML = '<span class="spin"></span>Abriendo…'
+    try { lote = await api(`/api/archivos/${encodeURIComponent(a.id)}/cargar`, { method: "POST" }); terminado = null; editando = null; location.hash = "#facturar"; renderLote() }
+    catch (e) { r.disabled = false; r.textContent = "Reintentar"; v.insertAdjacentHTML("afterbegin", `<div class="notice red">${esc(e.message)}</div>`) }
+  }
+}
+
+// ─── Navegación por secciones (#facturar · #facturas · #archivos[/id]) ───────
+function ruta() {
+  const h = location.hash.replace(/^#/, "") || "facturar"
+  const [sec, id] = h.split("/")
+  const vista = sec === "archivos" && id ? "archivo" : ["facturar", "facturas", "archivos"].includes(sec) ? sec : "facturar"
+  document.querySelectorAll(".view").forEach((v) => (v.hidden = v.id !== `view-${vista}`))
+  document.querySelectorAll(".rail-item[data-view]").forEach((a) => { const on = a.dataset.view === (vista === "archivo" ? "archivos" : vista); a.classList.toggle("is-active", on); on ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current") })
+  if (vista === "archivo") renderArchivo(decodeURIComponent(id))
+  if (vista === "archivos") renderArchivos()
+  window.scrollTo(0, 0)
+}
+window.addEventListener("hashchange", ruta)
+
+window.addEventListener("beforeunload", (e) => { if (emitiendo) e.preventDefault() })
+
+renderDrop()
+ruta()
+cargarArchivos()
+cargarEstado().then(async () => {
+  // Demo: /?ejemplo carga el Excel de ejemplo directo en la vista previa
+  if (estado.ambiente !== "demo" || !new URLSearchParams(location.search).has("ejemplo")) return
+  renderDrop(true)
+  try { lote = await api("/api/lotes/ejemplo", { method: "POST" }); terminado = null; renderLote() } catch (e) { renderDrop(false, e.message) }
+}).catch((e) => ($("#emisor").textContent = e.message))
+cargarHistorial()
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+.env
+certificados/*
+!certificados/.gitkeep
+datos/
+facturas/
+facturas-demo/
+.DS_Store
